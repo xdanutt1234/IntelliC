@@ -19,14 +19,14 @@
 
     const handleProfile = () =>
     {
-      console.log("FUCK YOU FUCK YOU FUCK YOU FUCK YOU");
+    
       
       navigate('/profile');
     }
-    
+
     const handleLogout = () => {
       logout();
-      console.log("BAGAMIAS PULA IN MA-TA");
+      
       navigate('/login');
     };
 
