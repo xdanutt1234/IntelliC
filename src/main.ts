@@ -1,5 +1,5 @@
 import "./styles.css";
-import App from "./List.svelte";
+import App from "./Login.svelte";
 
 
 const app = new App({

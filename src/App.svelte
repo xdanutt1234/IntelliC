@@ -3,11 +3,32 @@
     import CodeMirror from "svelte-codemirror-editor";
     import { javascript } from "@codemirror/lang-javascript";
     import { python } from "@codemirror/lang-python";
+    import './javascript/firebase'
+    import { logout } from "./javascript/auth"
+    import { navigate } from 'svelte-routing';
+    import { Router, Route } from 'svelte-routing';
+    import { auth } from './javascript/firebase'
+    
+    import Profile from './ProfilePage.svelte';
+    import Login from './Login.svelte';
 
     let value = "";
     let displayValue = "";
     let language = javascript();
     let isDropdownOpen = false;
+
+    const handleProfile = () =>
+    {
+      console.log("FUCK YOU FUCK YOU FUCK YOU FUCK YOU");
+      
+      navigate('/profile');
+    }
+    
+    const handleLogout = () => {
+      logout();
+      console.log("BAGAMIAS PULA IN MA-TA");
+      navigate('/login');
+    };
 
     async function sendMessage() {
         console.log(value);
@@ -79,12 +100,12 @@
         };
     });
 </script>
-
 <nav id="navbar" class="navbar">
-    <a href="#">Home</a>
+    <a href="#" >Home</a>
     <a href="#">Courses</a>
     <a href="#">Performance Stats</a>
-    <a href="#">Profile</a>
+    <a href="#" on:click={handleProfile}>Profile</a>
+    <a href="#" on:click={handleLogout}>Log Out</a>
     <!-- Add more links/buttons as needed -->
 </nav>
 
@@ -267,3 +288,8 @@
         background-color: #555;
     }
 </style>
+
+<Router>
+  <Route path="/login" component={Login} />
+  <Route path="/profile" component={Profile} />
+</Router>
