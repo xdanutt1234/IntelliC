@@ -3,31 +3,28 @@
     import CodeMirror from "svelte-codemirror-editor";
     import { javascript } from "@codemirror/lang-javascript";
     import { python } from "@codemirror/lang-python";
-    import './javascript/firebase'
-    import { logout } from "./javascript/auth"
+    import { cpp } from "@codemirror/lang-cpp";
+    import './javascript/firebase';
+    import { logout } from "./javascript/auth";
     import { navigate } from 'svelte-routing';
     import { Router, Route } from 'svelte-routing';
-    import { auth } from './javascript/firebase'
+    import { auth } from './javascript/firebase';
     
     import Profile from './ProfilePage.svelte';
     import Login from './Login.svelte';
 
-    let value = "";
+    let value = "#include <stdio.h>\nint main(){\n  return 0;\n}";
     let displayValue = "";
     let language = javascript();
     let isDropdownOpen = false;
 
-    const handleProfile = () =>
-    {
-    
-      
-      navigate('/profile');
-    }
+    const handleProfile = () => {
+        navigate('/profile');
+    };
 
     const handleLogout = () => {
-      logout();
-      
-      navigate('/login');
+        logout();
+        navigate('/login');
     };
 
     async function sendMessage() {
@@ -53,9 +50,9 @@
             socket.onmessage = function (event: MessageEvent) {
                 console.log("Received message:", event.data);
                 const messageData: string = event.data.toString();
-                if(messageData != ""){
+                if (messageData != "") {
                     updateDisplay(messageData);
-                };
+                }
             };
         } catch (error) {
             console.error("WebSocket initialization error:", error);
@@ -69,6 +66,7 @@
     const languages = [
         { label: "JavaScript", value: javascript() },
         { label: "Python", value: python() },
+        { label: "C", value: cpp()},
         // Add more language options here
     ];
 
@@ -76,14 +74,14 @@
         isDropdownOpen = !isDropdownOpen;
     }
 
-    function changeLanguage(languageObj) {
+    function changeLanguage(languageObj: any) {
         language = languageObj.value;
         isDropdownOpen = false;
     }
 
     onMount(() => {
         // Close the dropdown when clicking outside of it
-        const handleClickOutside = (event) => {
+        const handleClickOutside = (event: any) => {
             if (
                 isDropdownOpen &&
                 !event.target.closest(".language-dropdown") &&
@@ -100,102 +98,96 @@
         };
     });
 </script>
+
+<Router>
+  <Route path="/login" component={Login} />
+  <Route path="/profile" component={Profile} />
+</Router>
+
 <nav id="navbar" class="navbar">
-    <a href="#" >Home</a>
-    <a href="#">Courses</a>
-    <a href="#">Performance Stats</a>
-    <a href="#" on:click={handleProfile}>Profile</a>
-    <a href="#" on:click={handleLogout}>Log Out</a>
-    <!-- Add more links/buttons as needed -->
+    <button class="nav-link" on:click={() => navigate('/')}>Home</button>
+    <button class="nav-link" on:click={() => navigate('/login')}>Courses</button>
+    <button class="nav-link" on:click={() => navigate('/stats')}>Performance Stats</button>
+    <button class="nav-link" on:click={() => navigate('/profile')}>Profile</button>
+    <button class="nav-link" on:click={() => navigate('/login')}>Log Out</button>
 </nav>
 
-<!-- Menu for problem selection (left side) -->
-<!-- Updated styling for the problem menu -->
-<div
-    class="problem-menu"
-    style="position: fixed; left: 0; top: 0px; bottom: 0; height: 100%; width: 10%; overflow-y: auto; background-color: #333; color: #fff; padding: 10px;"
->
-    <ul style="margin-top: 40px;">
-        <li>Problem 1</li>
-        <li>Problem 2</li>
-        <!-- Add more problems here -->
-        <!-- You might need to adjust the styling based on your specific layout -->
-    </ul>
-</div>
-
-<!-- Coding window (centered) -->
-<div class="coding-window" style="position: absolute; left: 300px; top: 50px;">
-    <div class="problem-container">
-        <!-- Problem title and description (to be populated from the database) -->
-        <div class="problem-header" style="margin-left: 150px;">
-            <h1 style="text-align: center;">Problem Title</h1>
-            <p>Problem Description</p>
-        </div>
-        <div class="language-dropdown" style="margin-left: 920px;">
-            <button class="dropdown-toggle" on:click={toggleDropdown}>
-                Select Language
-            </button>
-            {#if isDropdownOpen}
-                <div class="dropdown-content">
-                    {#each languages as languageObj}
-                        <button on:click={() => changeLanguage(languageObj)}
-                            >{languageObj.label}</button
-                        >
-                    {/each}
-                </div>
-            {/if}
-        </div>
-
+<div class="container">
+    <div class="problem-header">
+        <h1>Problem Title</h1>
+        <p>Problem Description</p>
+    </div>
+    
+    <div class="language-dropdown">
+        <button class="dropdown-toggle" on:click={toggleDropdown}>
+            Select Language
+        </button>
+        {#if isDropdownOpen}
+            <div class="dropdown-content">
+                {#each languages as languageObj}
+                    <button on:click={() => changeLanguage(languageObj)}>
+                        {languageObj.label}
+                    </button>
+                {/each}
+            </div>
+        {/if}
+    </div>
+    
+    <div class="editor-container">
         <CodeMirror
             bind:value
             lang={language}
             styles={{
                 "&": {
-                    width: "1080px",
-                    maxWidth: "1080px",
+                    width: "100%",
                     height: "50rem",
-                    backgroundColor: "#1e1e3f",
+                    backgroundColor: "#2b2b2b",
+                    color: "#d4d4d4",
+                    textAlign: "left" // Ensure text starts from the left
                 },
+                ".cm-content": {
+                    textAlign: "left" // Align text inside the editor to the left
+                }
             }}
         />
-        <div class="terminal">
-            <!-- Add terminal content here -->
-            <textarea readonly style="width: 100%; height: 300px; overflow: auto; resize: none;">{displayValue}</textarea>
-        </div>
+    </div>
 
-        <!-- Buttons for running and submitting code -->
-        <div class="action-buttons">
-            <button on:click={sendMessage}>Run</button>
-            <button>Submit</button>
-        </div>
+    <div class="terminal">
+        <textarea readonly>{displayValue}</textarea>
+    </div>
+    
+    <div class="action-buttons">
+        <button on:click={sendMessage}>Run</button>
     </div>
 </div>
 
-<!-- Terminal-like area for code execution feedback -->
-
 <style>
-    /* Styling for the layout */
-    .problem-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
+    /* Color palette */
+    :root {
+        --primary-bg-color: #2b2b2b;
+        --primary-text-color: #d4d4d4;
+        --secondary-bg-color: #333;
+        --secondary-text-color: #ffffff;
+        --accent-color: #007bff;
+        --button-bg-color: #007bff;
+        --button-text-color: #ffffff;
+    }
+
+    /* General layout styling */
+    .container {
+        margin: 0 auto;
         padding: 20px;
-        margin-top: 50px; /* Adjusted to accommodate the navbar */
-    }
-
-    .problem-header {
-        width: 70%; /* Adjust width as needed */
-    }
-
-    .problem-menu {
-        width: 20%; /* Adjust width as needed */
-    }
-
-    .coding-window {
-        width: 70%; /* Adjust width as needed */
+        max-width: 1200px;
         display: flex;
         flex-direction: column;
         align-items: center;
+        color: var(--primary-text-color);
+        background-color: var(--primary-bg-color);
+    }
+
+    .problem-header {
+        text-align: center;
+        margin-bottom: 20px;
     }
 
     .language-dropdown {
@@ -204,24 +196,24 @@
     }
 
     .dropdown-toggle {
-        background-color: #f9f9f9;
-        border: none;
+        background-color: var(--primary-bg-color);
+        border: 1px solid var(--secondary-bg-color);
         padding: 10px;
         cursor: pointer;
         border-radius: 5px;
+        color: var(--primary-text-color);
     }
 
     .dropdown-content {
         display: block;
         position: absolute;
-        background-color: #fff;
+        background-color: var(--primary-bg-color);
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         border-radius: 5px;
         padding: 10px;
         top: 100%;
         left: 0;
-        width: 120px;
-        right: 0; /* Aligns the dropdown to the right */
+        width: 150px;
         z-index: 1000;
     }
 
@@ -233,63 +225,59 @@
         width: 100%;
         text-align: left;
         cursor: pointer;
+        color: var(--primary-text-color);
+    }
+
+    .editor-container {
+        width: 100%;
+        margin-bottom: 20px;
     }
 
     .terminal {
-        width: 70%; /* Adjust width as needed */
-        border: 1px solid #ccc;
+        width: 100%;
+        border: 1px solid var(--secondary-bg-color);
         padding: 10px;
-        margin-left: 180px;
-        margin-top: 20px;
-        min-height: 100px; /* Adjust height as needed */
+        margin-bottom: 20px;
+        min-height: 200px;
+    }
+
+    .terminal textarea {
+        width: 100%;
+        height: 200px;
+        resize: none;
+        background-color: var(--primary-bg-color);
+        border: none;
+        padding: 10px;
+        box-sizing: border-box;
+        color: var(--primary-text-color);
     }
 
     .action-buttons {
-        width: 70%; /* Adjust width as needed */
         display: flex;
-        margin-left: 500px;
-        margin-bottom: 70px;
         justify-content: center;
-        margin-top: 20px;
+        width: 100%;
     }
 
     .action-buttons button {
-        margin: 0 10px;
-
         padding: 10px 20px;
         border: none;
-        background-color: #007bff;
-        color: #fff;
+        background-color: var(--button-bg-color);
+        color: var(--button-text-color);
         cursor: pointer;
         border-radius: 5px;
+        margin: 0 10px;
     }
 
-    /* Styling for the navbar */
-    #navbar {
-        background-color: #333;
-        color: #fff;
+    .navbar {
+        background-color: var(--secondary-bg-color);
+        color: var(--secondary-text-color);
         padding: 10px;
         text-align: center;
         position: fixed;
-        top: 0; /* Ensures the navbar is always at the top */
+        top: 0;
         width: 100%;
-        z-index: 1000; /* Ensures the navbar stays on top of other elements */
-    }
-
-    #navbar a {
-        color: #fff;
-        text-decoration: none;
-        padding: 10px 20px;
-        margin: 0 5px;
-        border-radius: 5px;
-    }
-
-    #navbar a:hover {
-        background-color: #555;
+        z-index: 1000;
     }
 </style>
 
-<Router>
-  <Route path="/login" component={Login} />
-  <Route path="/profile" component={Profile} />
-</Router>
+
