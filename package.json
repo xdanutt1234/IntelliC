@@ -9,7 +9,21 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
 	},
+	"dependencies": {
+		"@codemirror/lang-cpp": "^6.0.2",
+		"@codemirror/lang-java": "^6.0.1",
+		"@codemirror/lang-javascript": "^6.2.2",
+		"@codemirror/lang-python": "^6.1.6",
+		"@tauri-apps/api": "^1",
+		"codemirror": "^6.0.1",
+		"firebase": "^10.12.0",
+		"svelte-codemirror-editor": "^1.4.0",
+		"svelte-routing": "^2.13.0"
+	  },
 	"devDependencies": {
+		"@tauri-apps/cli": "^1",
+		"@tsconfig/svelte": "^5.0.2",
+		"@types/firebase": "^3.2.1",
 		"@sveltejs/adapter-auto": "^3.0.0",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
