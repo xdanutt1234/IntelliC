@@ -27,6 +27,7 @@
 {#if currentUser}
   <p>Email: {currentUser.email}</p>
   <p>Profile Picture: <img src={currentUser.photoURL} alt="Profile Picture" width="100"></p>
+  <p></p>
   <button on:click={handleLogout}>Logout</button>
 {:else}
   <p>Loading...</p>
