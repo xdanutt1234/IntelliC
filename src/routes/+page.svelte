@@ -1,19 +1,17 @@
+<script lang="ts">
+    import { goto } from "$app/navigation";
+
+   function goToLogin(){
+        goto("/login");
+   } 
+</script>
+
 <div class="container">
     <h1>IntelliC</h1>
-    <button>Click Me</button>
+    <button on:click={goToLogin}>Click Me</button>
 </div>
 
 <style>
-    /* Styling for the page */
-    body {
-        font-family: Arial, sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-    }
-
     .container {
         text-align: center;
     }
