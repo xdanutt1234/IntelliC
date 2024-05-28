@@ -1,5 +1,4 @@
-
-<script>
+<script lang="ts">
     import { user } from '../../javascript/authstore.js';
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';

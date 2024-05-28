@@ -1,51 +1,67 @@
-<script>
-  import { onMount } from 'svelte';
-  import { getAuth, signInWithRedirect, onAuthStateChanged, GoogleAuthProvider } from 'firebase/auth';
-  import { getFirestore, doc, setDoc } from 'firebase/firestore';
-  import Navbar from "../../resources/Navbar.svelte";
-  import { goto } from '$app/navigation'; // Import SvelteKit's goto function for redirection
-  import app from '../../javascript/firebase'; // Adjust the import path based on your project structure
-  import { user } from '../../javascript/authstore.js'; // Adjust the import path based on your project structure
+<script lang="ts">
+    import { onMount } from "svelte";
+    import { goto } from "$app/navigation"; // Import SvelteKit's goto function for redirection
 
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+    import Navbar from "../../resources/Navbar.svelte";
 
-  // Function to handle user data storage in Firestore
-  async function storeUserData(user) {
-    try {
-      await setDoc(doc(db, "users", user.uid), {
-        email: user.email,
-        name: user.displayName,
-        profilePicture: user.photoURL,
-        createdAt: new Date()
-      });
-      console.log('User data added to Firestore');
-    } catch (error) {
-      console.error('Error storing user data:', error.message);
+    import {
+        getAuth,
+        signInWithRedirect,
+        onAuthStateChanged,
+        GoogleAuthProvider,
+    } from "firebase/auth";
+    import type { User } from "firebase/auth";
+    import { getFirestore, doc, setDoc } from "firebase/firestore";
+    import app from "../../javascript/firebase"; // Adjust the import path based on your project structure
+    import { user } from "../../javascript/authstore.js"; // Adjust the import path based on your project structure
+
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Function to handle user data storage in Firestore
+    async function storeUserData(user: User) {
+        try {
+            await setDoc(doc(db, "users", user.uid), {
+                email: user.email,
+                name: user.displayName,
+                profilePicture: user.photoURL,
+                createdAt: new Date(),
+            });
+            console.log("User data added to Firestore");
+        } catch (error: unknown) {
+            let message: string = "";
+            if (typeof error === "string") {
+                message = error.toUpperCase();
+            } else if (error instanceof Error) {
+                message = error.message;
+            }
+            console.error("Error storing user data:", message);
+        }
     }
-  }
 
-  // Function to handle Google sign-in
-  function signInWithGoogle() {
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: "select_account" }); // Force account chooser
-    signInWithRedirect(auth, provider);
-  }
+    // Function to handle Google sign-in
+    function signInWithGoogle() {
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: "select_account" }); // Force account chooser
+        signInWithRedirect(auth, provider);
+    }
 
-  // Monitor authentication state changes
-  onMount(() => {
-    onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        // User is signed in
-        storeUserData(currentUser); // Store user data in Firestore
-        user.set(currentUser); // Update the user store
-        goto('/profile'); // Redirect to the profile page
-      } else {
-        // User is signed out
-        console.log('User is signed out');
-      }
+    // Monitor authentication state changes
+    onMount(() => {
+        onAuthStateChanged(auth, (currentUser) => {
+            if (currentUser) {
+                // User is signed in
+                storeUserData(currentUser); // Store user data in Firestore
+                user.set(currentUser); // Update the user store
+                goto("/profile"); // Redirect to the profile page
+            } else {
+                // User is signed out
+                console.log("User is signed out");
+                user.set(null);
+                goto("/login");
+            }
+        });
     });
-  });
 </script>
 
 <Navbar />
