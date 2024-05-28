@@ -1,6 +1,7 @@
 <!-- Courses.svelte -->
 <script lang="ts">
     import { onMount } from 'svelte';
+    import Navbar from '../../resources/Navbar.svelte';
   
     interface Course {
       name: string;
@@ -51,14 +52,10 @@
         }
     </style>
   </head>
-  <nav id="navbar">
-    <a href="#">Home</a>
-    <a href="#">Courses</a>
-    <a href="#">Performance Stats</a>
-    <a href="#">Profile</a>
-    <!-- Add more links/buttons as needed -->
-  </nav>
-  <div class="courses_container">
+
+  <Navbar/>
+
+<div class="courses_container">
   <h1>Courses List</h1>
   <ul>
     {#each courses as course}

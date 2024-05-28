@@ -1,34 +1,25 @@
 <script lang="ts">
     import { onMount } from "svelte";
+
+    import "../../javascript/firebase";
+    import { logout } from "../../javascript/auth";
+    import { navigate } from "svelte-routing";
+
     import CodeMirror from "svelte-codemirror-editor";
     import { javascript } from "@codemirror/lang-javascript";
     import { python } from "@codemirror/lang-python";
-    import '../../javascript/firebase'
-    import { logout } from "../../javascript/auth"
-    import { navigate } from 'svelte-routing';
-    import { Router, Route } from 'svelte-routing';
-    import { auth } from '../../javascript/firebase'
-    
-    import Profile from '../profile/+page.svelte';
-    import Login from '../login/+page.svelte';
     import { cpp } from "@codemirror/lang-cpp";
+
+    import Navbar from "../../resources/Navbar.svelte";
 
     let value = "";
     let displayValue = "";
     let language = javascript();
     let isDropdownOpen = false;
 
-    const handleProfile = () =>
-    {
-    
-      
-      navigate('/profile');
-    }
-
     const handleLogout = () => {
-      logout();
-      
-      navigate('/login');
+        logout();
+        navigate("/login");
     };
 
     async function sendMessage() {
@@ -54,9 +45,9 @@
             socket.onmessage = function (event: MessageEvent) {
                 console.log("Received message:", event.data);
                 const messageData: string = event.data.toString();
-                if(messageData != ""){
+                if (messageData != "") {
                     updateDisplay(messageData);
-                };
+                }
             };
         } catch (error) {
             console.error("WebSocket initialization error:", error);
@@ -70,7 +61,7 @@
     const languages = [
         { label: "JavaScript", value: javascript() },
         { label: "Python", value: python() },
-        { label: "C", value: cpp() }
+        { label: "C", value: cpp() },
         // Add more language options here
     ];
 
@@ -102,17 +93,9 @@
         };
     });
 </script>
-<nav id="navbar" class="navbar">
-    <a href="#" >Home</a>
-    <a href="#">Courses</a>
-    <a href="#">Performance Stats</a>
-    <a href="#" on:click={handleProfile}>Profile</a>
-    <a href="/login"> Log Out</a>
-    <!-- Add more links/buttons as needed -->
-</nav>
 
-<!-- Menu for problem selection (left side) -->
-<!-- Updated styling for the problem menu -->
+<Navbar />
+
 <div
     class="problem-menu"
     style="position: fixed; left: 0; top: 0px; bottom: 0; height: 100%; width: 10%; overflow-y: auto; background-color: #333; color: #fff; padding: 10px;"
@@ -127,50 +110,57 @@
 
 <!-- Coding window (centered) -->
 <div class="coding-window" style="position: absolute; left: 300px; top: 50px;">
-  <div class="problem-container" style="display: flex; flex-direction: column;">
-      <!-- Problem title and description (to be populated from the database) -->
-      <div class="problem-header">
-          <h1 style="text-align: center;">Problem Title</h1>
-          <p>Problem Description</p>
-      </div>
-      <div class="language-dropdown">
-          <button class="dropdown-toggle" on:click={toggleDropdown}>
-              Select Language
-          </button>
-          {#if isDropdownOpen}
-              <div class="dropdown-content">
-                  {#each languages as languageObj}
-                      <button on:click={() => changeLanguage(languageObj)}
-                          >{languageObj.label}</button
-                      >
-                  {/each}
-              </div>
-          {/if}
-      </div>
+    <div
+        class="problem-container"
+        style="display: flex; flex-direction: column;"
+    >
+        <!-- Problem title and description (to be populated from the database) -->
+        <div class="problem-header">
+            <h1 style="text-align: center;">Problem Title</h1>
+            <p>Problem Description</p>
+        </div>
+        <div class="language-dropdown">
+            <button class="dropdown-toggle" on:click={toggleDropdown}>
+                Select Language
+            </button>
+            {#if isDropdownOpen}
+                <div class="dropdown-content">
+                    {#each languages as languageObj}
+                        <button on:click={() => changeLanguage(languageObj)}
+                            >{languageObj.label}</button
+                        >
+                    {/each}
+                </div>
+            {/if}
+        </div>
 
-      <CodeMirror
-          bind:value
-          lang={language}
-          styles={{
-              "&": {
-                  width: "1080px",
-                  maxWidth: "1080px",
-                  height: "50rem",
-                  backgroundColor: "#1e1e3f",
-              },
-          }}
-      />
-      <div class="terminal">
-          <!-- Add terminal content here -->
-          <textarea readonly style="width: 100%; height: 300px; overflow: auto; resize: none;">{displayValue}</textarea>
-      </div>
+        <CodeMirror
+            bind:value
+            lang={language}
+            styles={{
+                "&": {
+                    width: "1080px",
+                    maxWidth: "1080px",
+                    height: "50rem",
+                    backgroundColor: "#1e1e3f",
+                },
+            }}
+        />
+        <div class="terminal">
+            <!-- Add terminal content here -->
+            <textarea
+                readonly
+                style="width: 100%; height: 300px; overflow: auto; resize: none;"
+                >{displayValue}</textarea
+            >
+        </div>
 
-      <!-- Buttons for running and submitting code -->
-      <div class="action-buttons">
-          <button on:click={sendMessage}>Run</button>
-          <button>Submit</button>
-      </div>
-  </div>
+        <!-- Buttons for running and submitting code -->
+        <div class="action-buttons">
+            <button on:click={sendMessage}>Run</button>
+            <button>Submit</button>
+        </div>
+    </div>
 </div>
 
 <!-- Terminal-like area for code execution feedback -->
@@ -265,33 +255,4 @@
         cursor: pointer;
         border-radius: 5px;
     }
-
-    /* Styling for the navbar */
-    #navbar {
-        background-color: #333;
-        color: #fff;
-        padding: 10px;
-        text-align: center;
-        position: fixed;
-        top: 0; /* Ensures the navbar is always at the top */
-        width: 100%;
-        z-index: 1000; /* Ensures the navbar stays on top of other elements */
-    }
-
-    #navbar a {
-        color: #fff;
-        text-decoration: none;
-        padding: 10px 20px;
-        margin: 0 5px;
-        border-radius: 5px;
-    }
-
-    #navbar a:hover {
-        background-color: #555;
-    }
 </style>
-
-<Router>
-  <Route path="/login" component={Login} />
-  <Route path="/profile" component={Profile} />
-</Router>
