@@ -26,11 +26,12 @@
  * ```
  */
 declare module '$env/static/private' {
-	export const LESSOPEN: string;
+	export const ZELLIJ_SESSION_NAME: string;
 	export const RUST_RECURSION_COUNT: string;
 	export const USER: string;
 	export const npm_config_user_agent: string;
 	export const TAURI_DEBUG: string;
+	export const BUN_INSTALL: string;
 	export const npm_node_execpath: string;
 	export const LD_LIBRARY_PATH: string;
 	export const RUSTUP_TOOLCHAIN: string;
@@ -39,17 +40,17 @@ declare module '$env/static/private' {
 	export const npm_config_noproxy: string;
 	export const HOME: string;
 	export const OLDPWD: string;
-	export const NVM_BIN: string;
+	export const TERM_PROGRAM_VERSION: string;
 	export const npm_package_json: string;
-	export const NVM_INC: string;
 	export const TAURI_ARCH: string;
 	export const SSL_CERT_FILE: string;
 	export const npm_config_userconfig: string;
 	export const npm_config_local_prefix: string;
+	export const DBUS_SESSION_BUS_ADDRESS: string;
 	export const TAURI_PLATFORM_TYPE: string;
+	export const COLORTERM: string;
 	export const WSL_DISTRO_NAME: string;
 	export const COLOR: string;
-	export const NVM_DIR: string;
 	export const WAYLAND_DISPLAY: string;
 	export const LOGNAME: string;
 	export const NAME: string;
@@ -73,20 +74,21 @@ declare module '$env/static/private' {
 	export const LANG: string;
 	export const MACOSX_DEPLOYMENT_TARGET: string;
 	export const LS_COLORS: string;
+	export const TERM_PROGRAM: string;
+	export const ZELLIJ_PANE_ID: string;
 	export const npm_lifecycle_script: string;
+	export const ZELLIJ: string;
 	export const SHELL: string;
 	export const npm_package_version: string;
 	export const npm_lifecycle_event: string;
-	export const LESSCLOSE: string;
 	export const CARGO: string;
 	export const npm_config_globalconfig: string;
 	export const npm_config_init_module: string;
 	export const PWD: string;
+	export const npm_config_globalignorefile: string;
 	export const npm_execpath: string;
 	export const CARGO_HOME: string;
-	export const NVM_CD_FLAGS: string;
 	export const TAURI_TARGET_TRIPLE: string;
-	export const XDG_DATA_DIRS: string;
 	export const npm_config_global_prefix: string;
 	export const npm_command: string;
 	export const HOSTTYPE: string;
@@ -127,11 +129,12 @@ declare module '$env/static/public' {
  */
 declare module '$env/dynamic/private' {
 	export const env: {
-		LESSOPEN: string;
+		ZELLIJ_SESSION_NAME: string;
 		RUST_RECURSION_COUNT: string;
 		USER: string;
 		npm_config_user_agent: string;
 		TAURI_DEBUG: string;
+		BUN_INSTALL: string;
 		npm_node_execpath: string;
 		LD_LIBRARY_PATH: string;
 		RUSTUP_TOOLCHAIN: string;
@@ -140,17 +143,17 @@ declare module '$env/dynamic/private' {
 		npm_config_noproxy: string;
 		HOME: string;
 		OLDPWD: string;
-		NVM_BIN: string;
+		TERM_PROGRAM_VERSION: string;
 		npm_package_json: string;
-		NVM_INC: string;
 		TAURI_ARCH: string;
 		SSL_CERT_FILE: string;
 		npm_config_userconfig: string;
 		npm_config_local_prefix: string;
+		DBUS_SESSION_BUS_ADDRESS: string;
 		TAURI_PLATFORM_TYPE: string;
+		COLORTERM: string;
 		WSL_DISTRO_NAME: string;
 		COLOR: string;
-		NVM_DIR: string;
 		WAYLAND_DISPLAY: string;
 		LOGNAME: string;
 		NAME: string;
@@ -174,20 +177,21 @@ declare module '$env/dynamic/private' {
 		LANG: string;
 		MACOSX_DEPLOYMENT_TARGET: string;
 		LS_COLORS: string;
+		TERM_PROGRAM: string;
+		ZELLIJ_PANE_ID: string;
 		npm_lifecycle_script: string;
+		ZELLIJ: string;
 		SHELL: string;
 		npm_package_version: string;
 		npm_lifecycle_event: string;
-		LESSCLOSE: string;
 		CARGO: string;
 		npm_config_globalconfig: string;
 		npm_config_init_module: string;
 		PWD: string;
+		npm_config_globalignorefile: string;
 		npm_execpath: string;
 		CARGO_HOME: string;
-		NVM_CD_FLAGS: string;
 		TAURI_TARGET_TRIPLE: string;
-		XDG_DATA_DIRS: string;
 		npm_config_global_prefix: string;
 		npm_command: string;
 		HOSTTYPE: string;

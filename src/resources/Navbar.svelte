@@ -1,9 +1,10 @@
 <nav id="navbar" class="navbar">
-    <a href="/" >Home</a>
+    <a href="/">Home</a>
     <a href="/code">Code</a>
     <a href="/profile">Profile</a>
     <a href="/login"> Log Out</a>
 </nav>
+
 <style>
     #navbar {
         background-color: #333;

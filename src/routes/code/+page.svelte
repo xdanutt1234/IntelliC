@@ -1,14 +1,13 @@
 <script lang="ts">
     import { onMount } from "svelte";
-
-    import "../../javascript/firebase";
-    import { logout } from "../../javascript/auth";
     import { navigate } from "svelte-routing";
 
     import CodeMirror from "svelte-codemirror-editor";
     import { javascript } from "@codemirror/lang-javascript";
     import { python } from "@codemirror/lang-python";
     import { cpp } from "@codemirror/lang-cpp";
+    import "../../javascript/firebase";
+    import { logout } from "../../javascript/auth";
 
     import Navbar from "../../resources/Navbar.svelte";
 
@@ -69,18 +68,19 @@
         isDropdownOpen = !isDropdownOpen;
     }
 
-    function changeLanguage(languageObj) {
+    function changeLanguage(languageObj: any) {
         language = languageObj.value;
         isDropdownOpen = false;
     }
 
     onMount(() => {
         // Close the dropdown when clicking outside of it
-        const handleClickOutside = (event) => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as Element;
             if (
                 isDropdownOpen &&
-                !event.target.closest(".language-dropdown") &&
-                !event.target.closest(".dropdown-content")
+                !target.closest(".language-dropdown") &&
+                !target.closest(".dropdown-content")
             ) {
                 isDropdownOpen = false;
             }

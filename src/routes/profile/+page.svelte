@@ -1,33 +1,41 @@
-<script>
-  import { onMount } from 'svelte';
-  import { user } from '../../javascript/authstore.js'; // Import the user store
-  import { get } from 'svelte/store'; // To access the store value
-  import { logout } from '../../javascript/auth.js'; // Import the logout function
-  import { goto } from '$app/navigation'; // Import SvelteKit's goto function for redirection
+<script lang="ts">
+    import { user } from "../../javascript/authstore.js"; // Import the user store
+    import { get } from "svelte/store"; // To access the store value
+    import { logout } from "../../javascript/auth.js"; // Import the logout function
+    import { goto } from "$app/navigation"; // Import SvelteKit's goto function for redirection
 
-  let currentUser = get(user); // Get the initial user state
+    import Navbar from "../../resources/Navbar.svelte";
 
-  // Watch for changes in the user store
-  $: currentUser = $user;
+    let currentUser = get(user);
 
-  // Function to handle logout
-  const handleLogout = async () => {
-    try {
-      await logout();
-      console.log("User signed out successfully.");
-      goto('/login'); // Redirect to the login page after logout
-    } catch (error) {
-      console.error("An error occurred while signing out:", error);
-    }
-  };
+    // Watch for changes in the user store
+    $: currentUser = $user;
+
+    // Function to handle logout
+    const handleLogout = async () => {
+        try {
+            await logout();
+            console.log("User signed out successfully.");
+            goto("/login"); // Redirect to the login page after logout
+        } catch (error) {
+            console.error("An error occurred while signing out:", error);
+        }
+    };
 </script>
+
+<Navbar />
 
 <h1>Welcome to your profile page, {currentUser && currentUser.displayName}!</h1>
 
 {#if currentUser}
-  <p>Email: {currentUser.email}</p>
-  <p>Profile Picture: <img src={currentUser.photoURL} alt="Profile Picture" width="100"></p>
-  <button on:click={handleLogout}>Logout</button>
+    <p>Email: {currentUser.email}</p>
+    <p>
+        Profile Picture: <enhanced:img
+            src={currentUser.photoURL}
+            alt="Profile Picture"
+        />
+    </p>
+    <button on:click={handleLogout}>Logout</button>
 {:else}
-  <p>Loading...</p>
+    <p>Loading...</p>
 {/if}

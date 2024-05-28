@@ -1,25 +1,40 @@
+<div class="container">
+    <h1>IntelliC</h1>
+    <button>Click Me</button>
+</div>
 
-<script>
-    import { user } from '../javascript/authstore.js';
-    import { onMount } from 'svelte';
-    import { goto } from '$app/navigation';
-    import Navbar from "../resources/Navbar.svelte";
-  
-    let userData;
-  
-    $: if (!$user) {
-      //goto('/login');
+<style>
+    /* Styling for the page */
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
     }
-  
-    $: userData = $user;
-  
-    onMount(() => {
-      if (!$user) {
-        goto('/login');
-      }
-    });
-  </script>
-<Navbar />
 
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+    .container {
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 3rem;
+        color: #333;
+    }
+
+    button {
+        padding: 10px 20px;
+        font-size: 1.2rem;
+        border: none;
+        border-radius: 5px;
+        background-color: #007bff;
+        color: #fff;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+        background-color: #0056b3;
+    }
+</style>
