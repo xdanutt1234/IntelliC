@@ -2,13 +2,13 @@
   import { onMount } from 'svelte';
   import { getAuth, signInWithRedirect, onAuthStateChanged, GoogleAuthProvider } from 'firebase/auth';
   import { getFirestore, doc, setDoc } from 'firebase/firestore';
-  import app from '../../javascript/firebase';
-  import HomePage from '../code/+page.svelte';
-
+  import { goto } from '$app/navigation'; // Import SvelteKit's goto function for redirection
+  import app from '../../javascript/firebase'; // Adjust the import path based on your project structure
+  import { user } from '../../javascript/authstore.js'; // Adjust the import path based on your project structure
 
   const auth = getAuth(app);
   const db = getFirestore(app);
-  let redirect = false;
+
   // Function to handle user data storage in Firestore
   async function storeUserData(user) {
     try {
@@ -33,30 +33,28 @@
 
   // Monitor authentication state changes
   onMount(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
+    onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
         // User is signed in
-        storeUserData(user); // Store user data in Firestore
-        // Redirect or navigate to the next page
+        storeUserData(currentUser); // Store user data in Firestore
+        user.set(currentUser); // Update the user store
+        goto('/profile'); // Redirect to the profile page
       } else {
         // User is signed out
+        console.log('User is signed out');
       }
     });
   });
 </script>
 
-
-
-  <div class="container" style="margin-top: 300px;">
-    <h1>Welcome to Our App</h1>
-    <p>Please sign in to continue</p>
-    <button class="google-btn" on:click={signInWithGoogle}>
-      <img src="google-logo.png" alt="Google Logo">
-      Sign in with Google
-    </button>
-  </div>
-
-
+<div class="container" style="margin-top: 300px;">
+  <h1>Welcome to Our App</h1>
+  <p>Please sign in to continue</p>
+  <button class="google-btn" on:click={signInWithGoogle}>
+    <img src="google-logo.png" alt="Google Logo">
+    Sign in with Google
+  </button>
+</div>
 
 <style>
   /* Container styles */

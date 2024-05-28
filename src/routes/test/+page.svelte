@@ -1,12 +1,13 @@
+
 <script>
-    import { user } from '../javascript/authstore.js';
+    import { user } from '../../javascript/authstore.js';
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
   
     let userData;
   
     $: if (!$user) {
-      //goto('/login');
+      goto('/login');
     }
   
     $: userData = $user;
@@ -17,5 +18,8 @@
       }
     });
   </script>
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+  
+  {#if userData}
+    <h1>Welcome, {userData.email}!</h1>
+    <!-- Display user profile info -->
+  {/if}
