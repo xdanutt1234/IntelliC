@@ -1,7 +1,8 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { navigate } from "svelte-routing";
-
+    import { user } from "../../javascript/authstore.js"; // Import the user store
+    import { get } from "svelte/store"; // To access the store value
     import CodeMirror from "svelte-codemirror-editor";
     import { javascript } from "@codemirror/lang-javascript";
     import { python } from "@codemirror/lang-python";
@@ -16,6 +17,11 @@
     let language = javascript();
     let isDropdownOpen = false;
 
+    let currentUser = get(user);
+
+    // Watch for changes in the user store
+    $: currentUser = $user;
+
     const handleLogout = () => {
         logout();
         navigate("/login");
@@ -28,7 +34,7 @@
 
             socket.onopen = function () {
                 console.log("WebSocket connection established.");
-                let str = "SA18lk@ahja@C@" + value + "@12@";
+                let str = currentUser.uid.slice(0, 6) +"@ahja@C@" + value + "@12@";
                 console.log(str);
                 socket.send(str);
             };
