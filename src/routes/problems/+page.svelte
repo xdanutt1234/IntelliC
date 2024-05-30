@@ -2,14 +2,25 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { db } from "../../javascript/firebase"; // Import the Firestore instance from your firebase.js
-    import { collection, getDocs, query, where, setDoc, doc } from "firebase/firestore";
+    import {
+        collection,
+        getDocs,
+        query,
+        where,
+        setDoc,
+        doc,
+    } from "firebase/firestore";
+    import { user } from "../../javascript/authstore";
     import { page } from "$app/stores"; // Import the page store from SvelteKit
     import { currentproblem } from "../../javascript/current_problem";
     import { currentcourse } from "../../javascript/current_course";
     import { goto } from "$app/navigation";
     import { get } from "svelte/store";
+    import Navbar from "../../resources/Navbar.svelte";
     let courseId;
     let problems = [];
+    let currentUser = get(user);
+    let isAdmin = [];
 
     // Extract the courseId from the URL
     currentcourse.subscribe((value) => {
@@ -47,6 +58,19 @@
                 ...doc.data(),
             }));
             console.log(problems);
+        }
+
+        if (currentUser?.uid) {
+            const q = query(
+                collection(db, "admins"),
+                where("userId", "==", currentUser?.uid),
+            );
+            const querySnapshot = await getDocs(q);
+            isAdmin = querySnapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+            }));
+            console.log(isAdmin);
         }
     });
 
@@ -90,9 +114,44 @@
         .enroll_button:hover {
             background-color: #0056b3;
         }
+        .button-container {
+            text-align: left;
+            margin-left: 20px;
+            margin-top: 100px;
+        }
+        
+        .add-problem-button {
+            background-color: #4caf50; /* Green */
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 12px;
+            transition:
+                background-color 0.3s ease,
+                transform 0.3s ease;
+        }
+
+        .add-problem-button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        .add-problem-button:active {
+            background-color: #3e8e41;
+            transform: scale(1);
+        }
     </style>
 </head>
-
+<Navbar/>
+<div class="button-container">
+    <button class="add-problem-button">Add Problem</button>
+</div>
 <div class="problems_container">
     {#if problems.length > 0}
         {#each problems as problem}
