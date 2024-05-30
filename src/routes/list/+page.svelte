@@ -11,6 +11,7 @@
     onMount(async () => {
         const querySnapshot = await getDocs(collection(db, "courses"));
         courses = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
     });
 
     const handleEnroll = (courseId) => {

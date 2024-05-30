@@ -7,21 +7,37 @@
     import { javascript } from "@codemirror/lang-javascript";
     import { python } from "@codemirror/lang-python";
     import { cpp } from "@codemirror/lang-cpp";
+    import { db } from "../../javascript/firebase"; // Import the Firestore instance from your firebase.js
     import "../../javascript/firebase";
     import { logout } from "../../javascript/auth";
-
+    import { collection, getDocs, query, where } from "firebase/firestore";
+    import { currentproblem } from "../../javascript/current_problem";
+    import { currentcourse } from "../../javascript/current_course";
     import Navbar from "../../resources/Navbar.svelte";
-
+    import { goto } from "$app/navigation";
+    let problems = [];
+    let problemlist = [];
+    let title;
+    let description;
+    let problemId;
+    let courseId;
     let value = "";
     let displayValue = "";
     let language = javascript();
     let isDropdownOpen = false;
 
     let currentUser = get(user);
+    let adevarat = false;
 
     // Watch for changes in the user store
     $: currentUser = $user;
 
+    currentcourse.subscribe((value) => {
+        courseId = value;
+    });
+    currentproblem.subscribe((value) => {
+        problemId = value;
+    });
     const handleLogout = () => {
         logout();
         navigate("/login");
@@ -34,7 +50,8 @@
 
             socket.onopen = function () {
                 console.log("WebSocket connection established.");
-                let str = currentUser.uid.slice(0, 6) +"@ahja@C@" + value + "@12@";
+                let str =
+                    currentUser.uid.slice(0, 6) + "@ahja@C@" + value + "@12@";
                 console.log(str);
                 socket.send(str);
             };
@@ -69,7 +86,12 @@
         { label: "C", value: cpp() },
         // Add more language options here
     ];
-
+    const handleSolve = (problemId) => {
+        // Navigate to the problems list page with the course ID
+        console.log("incerc");
+        currentproblem.set(problemId);
+        goto(`/code`);
+    };
     function toggleDropdown() {
         isDropdownOpen = !isDropdownOpen;
     }
@@ -78,9 +100,58 @@
         language = languageObj.value;
         isDropdownOpen = false;
     }
+    async function debugProblems()
+    {
+        let allprob = [];
+        const querySnapshot = await getDocs(collection(db, "exercises"));
+        allprob = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        console.log(allprob);
+        allprob.forEach(element => {
+            if(element.id == problemId)
+                {
+                    title = element.name;
+                    description = element.edescription;
+                }
 
+        });
+    }
+    async function queryProblems()
+    {
+        if (courseId) {
+            const q = query(collection(db, "exercises"), where("courseId", "==", courseId));
+            const querySnapshot = await getDocs(q);
+            problemlist = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            console.log(problemslist);
+        }
+    }
+    async function queryProblem() {
+        if (problemId) {
+            try {
+                console.log(`Querying for problemId: ${problemId}`);
+                const q = query(
+                    collection(db, "exercises"),
+                    where("id", "==", problemId),
+                );
+                const querySnapshot = await getDocs(q);
+                problems = querySnapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                }));
+                console.log("Problems:", problems);
+                if (problems.length > 0) {
+                    title = problems[0].name;
+                    description = problems[0].edescription;
+                } else {
+                    console.log("No problems found with the given ID.");
+                }
+            } catch (error) {
+                console.error("Error querying Firestore:", error);
+            }
+        }
+    }
     onMount(() => {
         // Close the dropdown when clicking outside of it
+
         const handleClickOutside = (event: MouseEvent) => {
             const target = event.target as Element;
             if (
@@ -93,7 +164,9 @@
         };
 
         document.addEventListener("click", handleClickOutside);
-
+        debugProblems();
+        queryProblems();
+        //queryProblem();
         return () => {
             document.removeEventListener("click", handleClickOutside);
         };
@@ -107,8 +180,13 @@
     style="position: fixed; left: 0; top: 0px; bottom: 0; height: 100%; width: 10%; overflow-y: auto; background-color: #333; color: #fff; padding: 10px;"
 >
     <ul style="margin-top: 40px;">
-        <li>Problem 1</li>
-        <li>Problem 2</li>
+        {#if problemlist.length > 0}
+            {#each problemlist as problem}
+                <button class="enroll_button" on:click={() => handleSolve(problem.id)}>{problem.name}</button>
+            {/each}
+        {:else}
+
+        {/if}
         <!-- Add more problems here -->
         <!-- You might need to adjust the styling based on your specific layout -->
     </ul>
@@ -122,8 +200,10 @@
     >
         <!-- Problem title and description (to be populated from the database) -->
         <div class="problem-header">
-            <h1 style="text-align: center;">Problem Title</h1>
-            <p>Problem Description</p>
+            
+                    <h1 style="text-align: center;">{title}</h1>
+                    <p>{description}</p>
+
         </div>
         <div class="language-dropdown">
             <button class="dropdown-toggle" on:click={toggleDropdown}>
@@ -173,6 +253,18 @@
 
 <style>
     /* Styling for the layout */
+    .enroll_button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .enroll_button:hover {
+            background-color: #0056b3;
+        }
     .problem-container {
         display: flex;
         justify-content: space-between;
@@ -182,6 +274,7 @@
     }
 
     .problem-header {
+        margin-left: 160px;
         width: 70%; /* Adjust width as needed */
     }
 

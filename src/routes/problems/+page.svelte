@@ -4,7 +4,9 @@
     import { db } from "../../javascript/firebase"; // Import the Firestore instance from your firebase.js
     import { collection, getDocs, query, where } from "firebase/firestore";
     import { page } from "$app/stores"; // Import the page store from SvelteKit
+    import { currentproblem } from "../../javascript/current_problem";
     import { currentcourse } from "../../javascript/current_course";
+    import { goto } from "$app/navigation";
     let courseId;
     let problems = [];
 
@@ -12,6 +14,7 @@
     currentcourse.subscribe(value => {
         courseId = value;
     });
+    
     
     console.log(courseId);
 
@@ -24,6 +27,12 @@
             console.log(problems);
         }
     });
+
+    const handleSolve = (problemId) => {
+        // Navigate to the problems list page with the course ID
+        currentproblem.set(problemId);
+        goto(`/code`);
+    };
 </script>
 
 <head>
@@ -47,6 +56,18 @@
         .problem_card h2 {
             margin-top: 0;
         }
+        .enroll_button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .enroll_button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 
@@ -56,6 +77,7 @@
             <div class="problem_card">
                 <h2>{problem.name}</h2>
                 <p>{problem.description}</p>
+                <button class="enroll_button" on:click={() => handleSolve(problem.id)}>Solve</button>
             </div>
         {/each}
     {:else}
