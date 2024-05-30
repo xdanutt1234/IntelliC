@@ -150,7 +150,7 @@
 </head>
 <Navbar/>
 <div class="button-container">
-    <button class="add-problem-button">Add Problem</button>
+    <button class="add-problem-button" on:click={() => goto(`/createproblem`)}>Add Problem</button>
 </div>
 <div class="problems_container">
     {#if problems.length > 0}

@@ -1,5 +1,5 @@
 <script>
- import Navbar from "../../resources/Navbar.svelte";
+    import Navbar from "../../resources/Navbar.svelte";
     import { onMount } from "svelte";
     import { db } from "../../javascript/firebase"; // Import the Firestore instance from your firebase.js
     import { collection, addDoc } from "firebase/firestore";
