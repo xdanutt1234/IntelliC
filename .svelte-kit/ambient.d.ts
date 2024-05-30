@@ -38,6 +38,7 @@ declare module '$env/static/private' {
 	export const TAURI_PLATFORM_VERSION: string;
 	export const npm_config_noproxy: string;
 	export const HOME: string;
+	export const MOTD_SHOWN: string;
 	export const OLDPWD: string;
 	export const NVM_BIN: string;
 	export const npm_package_json: string;
@@ -139,6 +140,7 @@ declare module '$env/dynamic/private' {
 		TAURI_PLATFORM_VERSION: string;
 		npm_config_noproxy: string;
 		HOME: string;
+		MOTD_SHOWN: string;
 		OLDPWD: string;
 		NVM_BIN: string;
 		npm_package_json: string;
