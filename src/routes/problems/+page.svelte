@@ -2,35 +2,57 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { db } from "../../javascript/firebase"; // Import the Firestore instance from your firebase.js
-    import { collection, getDocs, query, where } from "firebase/firestore";
+    import { collection, getDocs, query, where, setDoc, doc } from "firebase/firestore";
     import { page } from "$app/stores"; // Import the page store from SvelteKit
     import { currentproblem } from "../../javascript/current_problem";
     import { currentcourse } from "../../javascript/current_course";
     import { goto } from "$app/navigation";
+    import { get } from "svelte/store";
     let courseId;
     let problems = [];
 
     // Extract the courseId from the URL
-    currentcourse.subscribe(value => {
+    currentcourse.subscribe((value) => {
         courseId = value;
     });
-    
-    
-    console.log(courseId);
+    function setProblem(problemId) {
+        setDoc(doc(db, "currentproblem", "wXdNfg2oO5quyBScNfhi"), {
+            problemId: problemId,
+        })
+            .then(() => console.log("Document successfully written!"))
+            .catch((error) => console.error("Error writing document: ", error));
+    }
 
+    console.log(courseId);
+    async function getCourse() {
+        const q = query(collection(db, "currentcourse"));
+        const querySnapshot = await getDocs(q);
+        problems = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+        courseId = problems[0].courseId;
+    }
     // Fetch problems from Firestore based on the courseId
     onMount(async () => {
+        await getCourse();
         if (courseId) {
-            const q = query(collection(db, "exercises"), where("courseId", "==", courseId));
+            const q = query(
+                collection(db, "exercises"),
+                where("courseId", "==", courseId),
+            );
             const querySnapshot = await getDocs(q);
-            problems = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            problems = querySnapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+            }));
             console.log(problems);
         }
     });
 
-    const handleSolve = (problemId) => {
+    const handleSolve = (pid) => {
         // Navigate to the problems list page with the course ID
-        currentproblem.set(problemId);
+        setProblem(pid);
         goto(`/code`);
     };
 </script>
@@ -77,7 +99,10 @@
             <div class="problem_card">
                 <h2>{problem.name}</h2>
                 <p>{problem.description}</p>
-                <button class="enroll_button" on:click={() => handleSolve(problem.id)}>Solve</button>
+                <button
+                    class="enroll_button"
+                    on:click={() => handleSolve(problem.id)}>Solve</button
+                >
             </div>
         {/each}
     {:else}

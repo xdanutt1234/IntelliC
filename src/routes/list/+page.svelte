@@ -2,10 +2,17 @@
     import { onMount } from "svelte";
     import Navbar from "../../resources/Navbar.svelte";
     import { db } from "../../javascript/firebase"; // Import the Firestore instance from your firebase.js
-    import { collection, getDocs } from "firebase/firestore";
+    import { collection, getDocs, setDoc, doc} from "firebase/firestore";
     import { goto } from "$app/navigation"; // Import the goto function from SvelteKit
     import { currentcourse } from "../../javascript/current_course";
     let courses = [];
+
+    function setCourse(courseId)
+    {
+        setDoc(doc(db, "currentcourse", "P7pVp38246bjAc5HftOQ"), { courseId : courseId})
+  .then(() => console.log("Document successfully written!"))
+  .catch((error) => console.error("Error writing document: ", error));
+    }
 
     // Fetch courses from Firestore on component mount
     onMount(async () => {
@@ -17,7 +24,7 @@
     const handleEnroll = (courseId) => {
         console.log(`Enroll in course with ID: ${courseId}`);
         // Navigate to the problems list page with the course ID
-        currentcourse.set(courseId);
+        setCourse(courseId);
         goto(`/problems`);
     };
 </script>

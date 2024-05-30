@@ -10,9 +10,7 @@
     import { db } from "../../javascript/firebase"; // Import the Firestore instance from your firebase.js
     import "../../javascript/firebase";
     import { logout } from "../../javascript/auth";
-    import { collection, getDocs, query, where } from "firebase/firestore";
-    import { currentproblem } from "../../javascript/current_problem";
-    import { currentcourse } from "../../javascript/current_course";
+    import { collection, getDocs, query, where, setDoc, doc } from "firebase/firestore";
     import Navbar from "../../resources/Navbar.svelte";
     import { goto } from "$app/navigation";
     let problems = [];
@@ -25,34 +23,51 @@
     let displayValue = "";
     let language = javascript();
     let isDropdownOpen = false;
-
+    
     let currentUser = get(user);
     let adevarat = false;
 
-    // Watch for changes in the user store
+    async function getCourse() {
+        const q = query(collection(db, "currentcourse"));
+        const querySnapshot = await getDocs(q);
+        problems = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+        courseId = problems[0].courseId;
+    }
+
+    async function getProblem() {
+        const q = query(collection(db, "currentproblem"));
+        const querySnapshot = await getDocs(q);
+        problems = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+        problemId = problems[0].problemId;
+    }
+
+    async function setProblem(pid) {
+        await setDoc(doc(db, "currentproblem", "wXdNfg2oO5quyBScNfhi"), {
+            problemId: pid,
+        });
+        problemId = pid;
+    }
+
     $: currentUser = $user;
 
-    currentcourse.subscribe((value) => {
-        courseId = value;
-    });
-    currentproblem.subscribe((value) => {
-        problemId = value;
-    });
     const handleLogout = () => {
         logout();
         navigate("/login");
     };
 
     async function sendMessage() {
-        console.log(value);
         try {
             const socket = new WebSocket("ws://localhost:8080");
 
             socket.onopen = function () {
-                console.log("WebSocket connection established.");
                 let str =
                     currentUser.uid.slice(0, 6) + "@ahja@C@" + value + "@12@";
-                console.log(str);
                 socket.send(str);
             };
 
@@ -65,7 +80,6 @@
             };
 
             socket.onmessage = function (event: MessageEvent) {
-                console.log("Received message:", event.data);
                 const messageData: string = event.data.toString();
                 if (messageData != "") {
                     updateDisplay(messageData);
@@ -84,14 +98,14 @@
         { label: "JavaScript", value: javascript() },
         { label: "Python", value: python() },
         { label: "C", value: cpp() },
-        // Add more language options here
     ];
-    const handleSolve = (problemId) => {
-        // Navigate to the problems list page with the course ID
-        console.log("incerc");
-        currentproblem.set(problemId);
-        goto(`/code`);
-    };
+
+    async function handleSolve(pid) {
+        await setProblem(pid);
+        await queryProblem();
+        window.location.reload();
+    }
+
     function toggleDropdown() {
         isDropdownOpen = !isDropdownOpen;
     }
@@ -100,34 +114,32 @@
         language = languageObj.value;
         isDropdownOpen = false;
     }
-    async function debugProblems()
-    {
+
+    async function debugProblems() {
+        await getProblem();
         let allprob = [];
         const querySnapshot = await getDocs(collection(db, "exercises"));
         allprob = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        console.log(allprob);
         allprob.forEach(element => {
-            if(element.id == problemId)
-                {
-                    title = element.name;
-                    description = element.edescription;
-                }
-
+            if (element.id == problemId) {
+                title = element.name;
+                description = element.edescription;
+            }
         });
     }
-    async function queryProblems()
-    {
+
+    async function queryProblems() {
+        await getCourse();
         if (courseId) {
             const q = query(collection(db, "exercises"), where("courseId", "==", courseId));
             const querySnapshot = await getDocs(q);
             problemlist = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            console.log(problemslist);
         }
     }
+
     async function queryProblem() {
         if (problemId) {
             try {
-                console.log(`Querying for problemId: ${problemId}`);
                 const q = query(
                     collection(db, "exercises"),
                     where("id", "==", problemId),
@@ -137,7 +149,6 @@
                     id: doc.id,
                     ...doc.data(),
                 }));
-                console.log("Problems:", problems);
                 if (problems.length > 0) {
                     title = problems[0].name;
                     description = problems[0].edescription;
@@ -149,9 +160,8 @@
             }
         }
     }
-    onMount(() => {
-        // Close the dropdown when clicking outside of it
 
+    onMount(() => {
         const handleClickOutside = (event: MouseEvent) => {
             const target = event.target as Element;
             if (
@@ -166,7 +176,6 @@
         document.addEventListener("click", handleClickOutside);
         debugProblems();
         queryProblems();
-        //queryProblem();
         return () => {
             document.removeEventListener("click", handleClickOutside);
         };
@@ -184,11 +193,7 @@
             {#each problemlist as problem}
                 <button class="enroll_button" on:click={() => handleSolve(problem.id)}>{problem.name}</button>
             {/each}
-        {:else}
-
         {/if}
-        <!-- Add more problems here -->
-        <!-- You might need to adjust the styling based on your specific layout -->
     </ul>
 </div>
 
@@ -198,12 +203,9 @@
         class="problem-container"
         style="display: flex; flex-direction: column;"
     >
-        <!-- Problem title and description (to be populated from the database) -->
         <div class="problem-header">
-            
-                    <h1 style="text-align: center;">{title}</h1>
-                    <p>{description}</p>
-
+            <h1 style="text-align: center;">{title}</h1>
+            <p>{description}</p>
         </div>
         <div class="language-dropdown">
             <button class="dropdown-toggle" on:click={toggleDropdown}>
@@ -233,7 +235,6 @@
             }}
         />
         <div class="terminal">
-            <!-- Add terminal content here -->
             <textarea
                 readonly
                 style="width: 100%; height: 300px; overflow: auto; resize: none;"
@@ -241,7 +242,6 @@
             >
         </div>
 
-        <!-- Buttons for running and submitting code -->
         <div class="action-buttons">
             <button on:click={sendMessage}>Run</button>
             <button>Submit</button>
@@ -249,41 +249,38 @@
     </div>
 </div>
 
-<!-- Terminal-like area for code execution feedback -->
-
 <style>
-    /* Styling for the layout */
     .enroll_button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .enroll_button:hover {
-            background-color: #0056b3;
-        }
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    .enroll_button:hover {
+        background-color: #0056b3;
+    }
     .problem-container {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
         padding: 20px;
-        margin-top: 50px; /* Adjusted to accommodate the navbar */
+        margin-top: 50px;
     }
 
     .problem-header {
         margin-left: 160px;
-        width: 70%; /* Adjust width as needed */
+        width: 70%;
     }
 
     .problem-menu {
-        width: 20%; /* Adjust width as needed */
+        width: 20%;
     }
 
     .coding-window {
-        width: 70%; /* Adjust width as needed */
+        width: 70%;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -312,7 +309,6 @@
         top: 100%;
         left: 0;
         width: 120px;
-        right: 0; /* Aligns the dropdown to the right */
         z-index: 1000;
     }
 
@@ -327,16 +323,16 @@
     }
 
     .terminal {
-        width: 70%; /* Adjust width as needed */
+        width: 70%;
         border: 1px solid #ccc;
         padding: 10px;
         margin-left: 180px;
         margin-top: 20px;
-        min-height: 100px; /* Adjust height as needed */
+        min-height: 100px;
     }
 
     .action-buttons {
-        width: 70%; /* Adjust width as needed */
+        width: 70%;
         display: flex;
         margin-left: 500px;
         margin-bottom: 70px;
@@ -346,7 +342,6 @@
 
     .action-buttons button {
         margin: 0 10px;
-
         padding: 10px 20px;
         border: none;
         background-color: #007bff;
