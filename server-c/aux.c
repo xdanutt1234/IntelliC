@@ -190,7 +190,7 @@ void compile_program(struct CompilationParams *arg, char *comp_buffer, char *exe
     case 'C':
         printf("C\n");
         char o_file[BUFFER_SIZE];
-        snprintf(o_file, sizeof(o_file), "/home/alex/info/temp-pc/compiled-programs/%s", name);
+        snprintf(o_file, sizeof(o_file), "/home/danut/IntelliC/server-c/compiled-programs/%s", name);
         printf("command: \"%s\"\n", o_file);
         char *command_and_args[] = { o_file, NULL };
         errPS = posix_spawn(&exec_pid, o_file, &action2, NULL, command_and_args, NULL);

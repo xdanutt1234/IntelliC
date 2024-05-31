@@ -1,12 +1,15 @@
 <script lang="ts">
+    import { onMount } from "svelte";
     import { user } from "../../javascript/authstore.js"; // Import the user store
     import { get } from "svelte/store"; // To access the store value
     import { logout } from "../../javascript/auth.js"; // Import the logout function
     import { goto } from "$app/navigation"; // Import SvelteKit's goto function for redirection
-
     import Navbar from "../../resources/Navbar.svelte";
+    import { collection, getDocs, query, where } from "firebase/firestore";
+    import { db } from "../../javascript/firebase"; // Import the Firestore instance from your firebase.js
 
     let currentUser = get(user);
+    let solvedCount = 0;
 
     // Watch for changes in the user store
     $: currentUser = $user;
@@ -21,10 +24,25 @@
             console.error("An error occurred while signing out:", error);
         }
     };
+
+    // Function to count solved problems
+    async function countSolvedProblems() {
+        try {
+            const q = query(collection(db, "exercises"), where("solved", "==", true));
+            const querySnapshot = await getDocs(q);
+            solvedCount = querySnapshot.size;
+        } catch (error) {
+            console.error("Error counting solved problems:", error);
+        }
+    }
+
+    onMount(() => {
+        countSolvedProblems();
+    });
 </script>
 
 <style>
-    body, html{
+    body, html {
         margin: 0;
         padding: 0;
     }
@@ -67,6 +85,14 @@
     .logout-button:hover {
         background-color: #ff4c4c;
     }
+    .solved-counter {
+        margin-top: 1rem;
+        padding: 0.5rem 1rem;
+        background-color: #4caf50;
+        color: white;
+        border-radius: 5px;
+        text-align: center;
+    }
 </style>
 
 <Navbar />
@@ -79,6 +105,9 @@
         </div>
         <div class="profile-details">
             <p><strong>Email:</strong> {currentUser.email}</p>
+        </div>
+        <div class="solved-counter">
+            <p><strong>Solved Problems:</strong> {solvedCount}</p>
         </div>
         <button class="logout-button" on:click={handleLogout}>Logout</button>
     {:else}

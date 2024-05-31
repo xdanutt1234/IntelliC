@@ -2,28 +2,41 @@
     import { onMount } from "svelte";
     import Navbar from "../../resources/Navbar.svelte";
     import { db } from "../../javascript/firebase"; // Import the Firestore instance from your firebase.js
-    import { collection, getDocs, setDoc, doc} from "firebase/firestore";
+    import { collection, getDocs, setDoc, doc, query, where } from "firebase/firestore";
     import { goto } from "$app/navigation"; // Import the goto function from SvelteKit
     import { currentcourse } from "../../javascript/current_course";
-    let courses = [];
 
-    function setCourse(courseId)
-    {
-        setDoc(doc(db, "currentcourse", "P7pVp38246bjAc5HftOQ"), { courseId : courseId})
-  .then(() => console.log("Document successfully written!"))
-  .catch((error) => console.error("Error writing document: ", error));
+    let courses = [];
+    let problemsData = {};
+
+    function setCourse(courseId) {
+        setDoc(doc(db, "currentcourse", "P7pVp38246bjAc5HftOQ"), { courseId: courseId })
+            .then(() => console.log("Document successfully written!"))
+            .catch((error) => console.error("Error writing document: ", error));
     }
 
-    // Fetch courses from Firestore on component mount
+    // Fetch courses and problem data from Firestore on component mount
     onMount(async () => {
-        const querySnapshot = await getDocs(collection(db, "courses"));
-        courses = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
+        const coursesSnapshot = await getDocs(collection(db, "courses"));
+        courses = coursesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        const exercisesSnapshot = await getDocs(collection(db, "exercises"));
+        problemsData = exercisesSnapshot.docs.reduce((acc, doc) => {
+            const data = doc.data();
+            const courseId = data.courseId;
+            if (!acc[courseId]) {
+                acc[courseId] = { total: 0, solved: 0 };
+            }
+            acc[courseId].total += 1;
+            if (data.solved) {
+                acc[courseId].solved += 1;
+            }
+            return acc;
+        }, {});
     });
 
     const handleEnroll = (courseId) => {
         console.log(`Enroll in course with ID: ${courseId}`);
-        // Navigate to the problems list page with the course ID
         setCourse(courseId);
         goto(`/problems`);
     };
@@ -73,6 +86,8 @@
             <div class="course_card">
                 <h2>{course.name}</h2>
                 <p>{course.description}</p>
+                <p>Total Problems: {problemsData[course.id]?.total || 0}</p>
+                <p>Solved Problems: {problemsData[course.id]?.solved || 0}</p>
                 <button class="enroll_button" on:click={() => handleEnroll(course.id)}>Enroll</button>
             </div>
         {/each}

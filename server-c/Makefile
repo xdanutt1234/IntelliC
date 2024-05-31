@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra
+CFLAGS = -Wall -Wextra -pthread
 LDFLAGS= -L/usr/local/lib64 -lws
 
 websocket: websocket.o libaux.a

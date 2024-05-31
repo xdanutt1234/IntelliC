@@ -1,18 +1,19 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { navigate } from "svelte-routing";
-    import { user } from "../../javascript/authstore.js"; // Import the user store
-    import { get } from "svelte/store"; // To access the store value
+    import { user } from "../../javascript/authstore.js";
+    import { get } from "svelte/store";
     import CodeMirror from "svelte-codemirror-editor";
     import { javascript } from "@codemirror/lang-javascript";
     import { python } from "@codemirror/lang-python";
     import { cpp } from "@codemirror/lang-cpp";
-    import { db } from "../../javascript/firebase"; // Import the Firestore instance from your firebase.js
+    import { db } from "../../javascript/firebase";
     import "../../javascript/firebase";
     import { logout } from "../../javascript/auth";
-    import { collection, getDocs, query, where, setDoc, doc } from "firebase/firestore";
+    import { collection, getDocs, query, where, setDoc, doc, updateDoc } from "firebase/firestore";
     import Navbar from "../../resources/Navbar.svelte";
     import { goto } from "$app/navigation";
+
     let problems = [];
     let problemlist = [];
     let title;
@@ -23,9 +24,8 @@
     let displayValue = "";
     let language = javascript();
     let isDropdownOpen = false;
-    
     let currentUser = get(user);
-    let adevarat = false;
+    let submissionSuccess = false;
 
     async function getCourse() {
         const q = query(collection(db, "currentcourse"));
@@ -161,6 +161,26 @@
         }
     }
 
+    async function handleSubmit() {
+        // Simulate correct output
+        updateDisplay("Correct output!");
+        // Highlight problem title
+        submissionSuccess = true;
+        // Add solved field to problem in Firestore
+        if (problemId) {
+            try {
+                const problemRef = doc(db, "exercises", problemId);
+                await updateDoc(problemRef, { solved: true });
+                queryProblems(); // Refresh the problem list to reflect the solved state
+            } catch (error) {
+                console.error("Error updating Firestore:", error);
+            }
+        }
+        setTimeout(() => {
+            submissionSuccess = false; // Reset after a delay
+        }, 3000);
+    }
+
     onMount(() => {
         const handleClickOutside = (event: MouseEvent) => {
             const target = event.target as Element;
@@ -184,27 +204,22 @@
 
 <Navbar />
 
-<div
-    class="problem-menu"
-    style="position: fixed; left: 0; top: 0px; bottom: 0; height: 100%; width: 10%; overflow-y: auto; background-color: #333; color: #fff; padding: 10px;"
->
-    <ul style="margin-top: 40px;">
+<div class="problem-menu">
+    <ul style="margin-top:60px">
         {#if problemlist.length > 0}
             {#each problemlist as problem}
-                <button class="enroll_button" on:click={() => handleSolve(problem.id)}>{problem.name}</button>
+                <button class="enroll_button" class:solved={problem.solved} on:click={() => handleSolve(problem.id)}>
+                    {problem.name}
+                </button>
             {/each}
         {/if}
     </ul>
 </div>
 
-<!-- Coding window (centered) -->
-<div class="coding-window" style="position: absolute; left: 300px; top: 50px;">
-    <div
-        class="problem-container"
-        style="display: flex; flex-direction: column;"
-    >
-        <div class="problem-header">
-            <h1 style="text-align: center;">{title}</h1>
+<div class="coding-window">
+    <div class="problem-container">
+        <div class="problem-header" class:submission-success={submissionSuccess}>
+            <h1>{title}</h1>
             <p>{description}</p>
         </div>
         <div class="language-dropdown">
@@ -229,7 +244,7 @@
                 "&": {
                     width: "1080px",
                     maxWidth: "1080px",
-                    height: "50rem",
+                    height: "30rem",
                     backgroundColor: "#1e1e3f",
                 },
             }}
@@ -244,46 +259,67 @@
 
         <div class="action-buttons">
             <button on:click={sendMessage}>Run</button>
-            <button>Submit</button>
+            <button on:click={handleSubmit}>Submit</button>
         </div>
     </div>
 </div>
 
 <style>
-    .enroll_button {
-        background-color: #007bff;
-        color: white;
-        padding: 10px 20px;
+    .problem-menu {
+        position: fixed;
+        left: 0;
+        top: 0px;
+        bottom: 0;
+        height: 100%;
+        width: 15%;
+        overflow-y: auto;
+        background-color: #333;
+        color: #fff;
+        padding: 10px;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .problem-menu ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .problem-menu button {
+        display: block;
+        width: 100%;
+        padding: 10px 15px;
+        margin-bottom: 10px;
+        background-color: #444;
+        color: #fff;
         border: none;
         border-radius: 5px;
+        text-align: left;
         cursor: pointer;
         transition: background-color 0.3s;
     }
-    .enroll_button:hover {
-        background-color: #0056b3;
+
+    .problem-menu button.solved {
+        background-color: #28a745;
     }
+
+    .problem-menu button:hover {
+        background-color: #555;
+    }
+
     .problem-container {
         display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
+        flex-direction: column;
+        margin-left: 20%;
         padding: 20px;
-        margin-top: 50px;
+        width: 70%;
     }
 
     .problem-header {
-        margin-left: 160px;
-        width: 70%;
+        margin-bottom: 20px;
     }
 
-    .problem-menu {
-        width: 20%;
-    }
-
-    .coding-window {
-        width: 70%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+    .problem-header.submission-success h1 {
+        color: green;
     }
 
     .language-dropdown {
@@ -323,19 +359,15 @@
     }
 
     .terminal {
-        width: 70%;
+        width: 100%;
         border: 1px solid #ccc;
         padding: 10px;
-        margin-left: 180px;
         margin-top: 20px;
         min-height: 100px;
     }
 
     .action-buttons {
-        width: 70%;
         display: flex;
-        margin-left: 500px;
-        margin-bottom: 70px;
         justify-content: center;
         margin-top: 20px;
     }
@@ -348,5 +380,10 @@
         color: #fff;
         cursor: pointer;
         border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    .action-buttons button:hover {
+        background-color: #0056b3;
     }
 </style>
